@@ -95,3 +95,6 @@ insert into CLASSEMENT values (1,3,2);
 
 SELECT COUNT(STATION.idStation) AS nb_Station
 FROM STATION;
+
+SELECT SUM(STATION.altitude) AS altitudeTotal
+FROM STATION;
