@@ -121,3 +121,22 @@ $$
   END;
 $$
 language 'plpgsql';
+
+--  Fonction qui formalise le nom de tous les skieurs. Cette fonction retournera le nombre de lignes traitées
+CREATE OR REPLACE FUNCTION formaliseSkieur () returns VARCHAR AS
+$$
+  DECLARE
+     i int :=0;
+      curs CURSOR FOR 
+          SELECT s.nomSkieur as nomSkieur
+          FROM SKIEUR s 
+          ;
+  BEGIN
+      FOR resultat in curs LOOP
+        UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
+        i:=i+1;
+      END LOOP;
+        return ('Le nombre de ligne est de : '||i);
+    END;
+$$
+language 'plpgsql';
