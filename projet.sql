@@ -93,8 +93,20 @@ insert into CLASSEMENT values (5,2,5);
 insert into CLASSEMENT values (6,3,1);
 insert into CLASSEMENT values (1,3,2);
 
-SELECT COUNT(STATION.idStation) AS nb_Station
-FROM STATION;
-
-SELECT SUM(STATION.altitude) AS altitudeTotal
-FROM STATION;
+-- Fonction qui calcule et qui retourne l'altitude moyenne des stations
+create or replace function calculMoyenneAltitude () returns float as
+    $$
+    DECLARE
+        prime int :=0;
+        curs CURSOR FOR 
+            Select SUM(s.altitude) as altitudeTotal, count(s.idStation) as nbSkieur
+            FROM STATION s 
+            ;
+    BEGIN
+        FOR resultat in curs LOOP
+            prime:= resultat.altitudeTotal/resultat.nbSkieur;
+            return prime;
+        END LOOP;
+    END;
+$$
+language 'plpgsql';
