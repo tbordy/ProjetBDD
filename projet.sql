@@ -97,17 +97,14 @@ insert into CLASSEMENT values (1,3,2);
 CREATE OR REPLACE FUNCTION calculMoyenneAltitude () returns float AS
 $$
   DECLARE
-      prime int := 0;
-      curs CURSOR FOR 
-          SELECT SUM(s.altitude) AS altitudeTotal, count(s.idStation) AS nbSkieur
+      resultat float ;
+          
+    BEGIN
+        SELECT INTO  resultat AVG(s.altitude) AS altitudeMoyenne
           FROM STATION s 
           ;
-  BEGIN
-      FOR resultat IN curs LOOP
-          prime:= resultat.altitudeTotal/resultat.nbSkieur;
-          return prime;
-      END LOOP;
-  END;
+        return resultat;
+    END;
 $$
 language 'plpgsql';
 
