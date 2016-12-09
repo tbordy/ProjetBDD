@@ -110,3 +110,14 @@ $$
   END;
 $$
 language 'plpgsql';
+
+--  Fonction qui formalise (1ère lettre majuscule le reste en minuscule) un nom passé en paramètre. Ex : DUPONT -> Dupont
+CREATE OR REPLACE FUNCTION formaliseNom (nom VARCHAR) returns VARCHAR AS
+$$
+  DECLARE
+      nomFini VARCHAR := INITCAP(nom);
+  BEGIN
+      return nomFini;
+  END;
+$$
+language 'plpgsql';
