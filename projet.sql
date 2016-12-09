@@ -92,3 +92,6 @@ insert into CLASSEMENT values (4,2,4);
 insert into CLASSEMENT values (5,2,5);
 insert into CLASSEMENT values (6,3,1);
 insert into CLASSEMENT values (1,3,2);
+
+SELECT COUNT(STATION.idStation) AS nb_Station
+FROM STATION;
