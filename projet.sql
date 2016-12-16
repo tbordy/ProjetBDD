@@ -1,10 +1,10 @@
+DROP TABLE IF EXISTS PENALISES;
 DROP TABLE IF EXISTS COMPORTE;
 DROP TABLE IF EXISTS CLASSEMENT;
 DROP TABLE IF EXISTS COMPETITION;
 DROP TABLE IF EXISTS SKIEUR;
 DROP TABLE IF EXISTS SPECIALITE;
 DROP TABLE IF EXISTS STATION;
-
 
 
 CREATE TABLE STATION (
@@ -27,8 +27,8 @@ CREATE TABLE SKIEUR (
   idSpecialite INT,
   idStation INT,
   CONSTRAINT pkSkieur PRIMARY KEY(noSkieur),
-  CONSTRAINT fkcomporteSpecialite FOREIGN KEY (idSpecialite) REFERENCES SPECIALITE(idSpecialite),
-  CONSTRAINT fkcomporteStation FOREIGN KEY (idStation) REFERENCES STATION(idStation)
+  CONSTRAINT fkSkieurSpecialite FOREIGN KEY (idSpecialite) REFERENCES SPECIALITE(idSpecialite),
+  CONSTRAINT fkSkieurStation FOREIGN KEY (idStation) REFERENCES STATION(idStation)
 );
 
 CREATE TABLE COMPETITION (
@@ -37,7 +37,7 @@ CREATE TABLE COMPETITION (
   dateComp DATE,
   idStation INT,
   CONSTRAINT pkCompetition PRIMARY KEY(idCompet),
-  CONSTRAINT fkcomporteStation FOREIGN KEY (idStation) REFERENCES STATION(idStation)
+  CONSTRAINT fkCompetitionStation FOREIGN KEY (idStation) REFERENCES STATION(idStation)
 );
 
 CREATE TABLE CLASSEMENT (
@@ -45,17 +45,27 @@ CREATE TABLE CLASSEMENT (
   idCompet INT,
   classement INT,
   CONSTRAINT pkClassement PRIMARY KEY(noSkieur, idCompet),
-  CONSTRAINT fkcomporteSkieur FOREIGN KEY (noSkieur) REFERENCES SKIEUR(noSkieur),
-  CONSTRAINT fkcomporteCompetition FOREIGN KEY (idCompet) REFERENCES COMPETITION(idCompet)
+  CONSTRAINT fkClassementSkieur FOREIGN KEY (noSkieur) REFERENCES SKIEUR(noSkieur),
+  CONSTRAINT fkClassementCompetition FOREIGN KEY (idCompet) REFERENCES COMPETITION(idCompet)
 );
 
 CREATE TABLE COMPORTE (
   idCompet INT,
   idSpecialite INT,
   CONSTRAINT pkComporte PRIMARY KEY(idCompet, idSpecialite),
-  CONSTRAINT fkcomporteCompetition FOREIGN KEY (idCompet) REFERENCES COMPETITION(idCompet),
-  CONSTRAINT fkcomporteSpecialite FOREIGN KEY (idSpecialite) REFERENCES SPECIALITE(idSpecialite)
+  CONSTRAINT fkComporteCompetition FOREIGN KEY (idCompet) REFERENCES COMPETITION(idCompet),
+  CONSTRAINT fkComporteSpecialite FOREIGN KEY (idSpecialite) REFERENCES SPECIALITE(idSpecialite)
 );
+
+CREATE TABLE PENALISES (
+	noSkieur INT,
+	idCompet INT,
+	CONSTRAINT pkPenalises PRIMARY KEY(noSkieur, idCompet),
+  	CONSTRAINT fkPenalisesSkieur FOREIGN KEY (noSkieur) REFERENCES SKIEUR(noSkieur),
+  	CONSTRAINT fkPenalisesCompetition FOREIGN KEY (idCompet) REFERENCES COMPETITION(idCompet)
+);
+
+
 
 
 insert into STATION values(default, 'Tignes', 2000, 'France');
@@ -92,6 +102,10 @@ insert into CLASSEMENT values (4,2,4);
 insert into CLASSEMENT values (5,2,5);
 insert into CLASSEMENT values (6,3,1);
 insert into CLASSEMENT values (1,3,2);
+
+insert into PENALISES values (6,3);
+insert into PENALISES values (1,2);
+
 
 -- Fonction qui calcule et qui retourne l'altitude moyenne des stations
 CREATE OR REPLACE FUNCTION calculMoyenneAltitude () returns float AS
@@ -137,3 +151,5 @@ $$
     END;
 $$
 language 'plpgsql';
+
+-- Fonction qui déclasse les skieurs présents dans la table PENALISÉS
