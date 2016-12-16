@@ -108,48 +108,78 @@ insert into PENALISES values (1,2);
 
 
 -- Fonction qui calcule et qui retourne l'altitude moyenne des stations
-CREATE OR REPLACE FUNCTION calculMoyenneAltitude () returns float AS
+CREATE OR REPLACE FUNCTION calculMoyenneAltitude () RETURNS float AS
 $$
   DECLARE
-      resultat float ;
+    	resultat float ;
           
     BEGIN
-        SELECT INTO  resultat AVG(s.altitude) AS altitudeMoyenne
-          FROM STATION s 
-          ;
+        SELECT INTO  resultat AVG(STATION.altitude) AS altitudeMoyenne
+        FROM STATION;
+
         return resultat;
     END;
 $$
 language 'plpgsql';
 
 --  Fonction qui formalise (1ère lettre majuscule le reste en minuscule) un nom passé en paramètre. Ex : DUPONT -> Dupont
-CREATE OR REPLACE FUNCTION formaliseNom (nom VARCHAR) returns VARCHAR AS
+CREATE OR REPLACE FUNCTION formaliseNom (nom VARCHAR) RETURNS VARCHAR AS
 $$
-  DECLARE
-      nomFini VARCHAR := INITCAP(nom);
-  BEGIN
-      return nomFini;
-  END;
+	DECLARE
+      	nomFini VARCHAR := INITCAP(nom);
+  	BEGIN
+      	return nomFini;
+ 	END;
 $$
 language 'plpgsql';
 
 --  Fonction qui formalise le nom de tous les skieurs. Cette fonction retournera le nombre de lignes traitées
-CREATE OR REPLACE FUNCTION formaliseSkieur () returns VARCHAR AS
+CREATE OR REPLACE FUNCTION formaliseSkieur () RETURNS VARCHAR AS
 $$
-  DECLARE
-     i int :=0;
-      curs CURSOR FOR 
-          SELECT s.nomSkieur as nomSkieur
-          FROM SKIEUR s 
-          ;
-  BEGIN
-      FOR resultat in curs LOOP
-        UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
-        i:=i+1;
-      END LOOP;
+  	DECLARE
+     	i int :=0;
+      	curs CURSOR FOR 
+          	SELECT SKIEUR.nomSkieur as nomSkieur
+         	FROM SKIEUR;
+	BEGIN
+     	FOR resultat in curs LOOP
+        	UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
+        	i:=i+1;
+     	END LOOP;
+        
         return ('Le nombre de ligne est de : '||i);
     END;
 $$
 language 'plpgsql';
 
 -- Fonction qui déclasse les skieurs présents dans la table PENALISÉS
+CREATE OR REPLACE FUNCTION declasseSkieurPenalises () RETURNS setof record AS
+$$
+  	DECLARE
+
+	BEGIN
+
+    END;
+$$
+language 'plpgsql';
+
+
+--UPDATE CLASSEMENT set CLASSEMENT.classement = z + 1
+--WHERE CLASSEMENT.noSkieur = y
+--AND CLASSEMENT.idCompet = x;
+
+-- z = 
+SELECT COUNT(CLASSEMENT.noSkieur)
+FROM CLASSEMENT
+WHERE CLASSEMENT.idCompet = 1;
+
+-- y = 
+SELECT PENALISES.noSkieur
+FROM PENALISES 
+WHERE PENALISES.idCompet = 1;
+
+-- x = 
+SELECT PENALISES.idCompet
+FROM PENALISES
+GROUP BY PENALISES.idCompet
+ORDER BY PENALISES.idCompet;
