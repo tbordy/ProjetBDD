@@ -155,46 +155,36 @@ LANGUAGE 'plpgsql';
 -- Fonction qui déclasse les skieurs présents dans la table PENALISÉS
 CREATE OR REPLACE FUNCTION declasseSkieurPenalises () RETURNS setof record AS
 $$
-  	DECLARE
-
-	BEGIN
-
-    END;
-$$
-LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION idCompetPenalise () RETURNS SETOF INTEGER AS
-$$ 
 DECLARE
+	x INTEGER := 0;
+	y INTEGER [];
+	z INTEGER := 0;
+	curseur CURSOR FOR 
+		SELECT PENALISES.idCompet
+			FROM PENALISES
+			GROUP BY PENALISES.idCompet
+			ORDER BY PENALISES.idCompet;
 
 BEGIN 
-		RETURN QUERY SELECT PENALISES.idCompet
-		FROM PENALISES
-		GROUP BY PENALISES.idCompet
-		ORDER BY PENALISES.idCompet;
+	FOR curseurRecord in curseur LOOP
+		x := curseurRecord.idCompet;
+		y := -- erreur car y vaut plusieur valeur
+		SELECT PENALISES.noSkieur
+		FROM PENALISES 
+		WHERE PENALISES.idCompet = x;
+
+		z :=
+		SELECT COUNT(CLASSEMENT.noSkieur) AS nbDeParticipant
+		FROM CLASSEMENT
+		WHERE CLASSEMENT.idCompet = x;
+
+		UPDATE CLASSEMENT set CLASSEMENT.classement = z + 1
+		WHERE CLASSEMENT.noSkieur = y
+		AND CLASSEMENT.idCompet = x;
+	END LOOP;
 END; 
-$$ 
+$$
 LANGUAGE 'plpgsql';
-
---UPDATE CLASSEMENT set CLASSEMENT.classement = z + 1
---WHERE CLASSEMENT.noSkieur = y
---AND CLASSEMENT.idCompet = x;
-
--- z = 
-SELECT COUNT(CLASSEMENT.noSkieur) AS nbDeParticipant
-FROM CLASSEMENT
-WHERE CLASSEMENT.idCompet = 1;
-
--- y = 
-SELECT PENALISES.noSkieur
-FROM PENALISES 
-WHERE PENALISES.idCompet = 1;
-
--- x = 
-SELECT PENALISES.idCompet
-FROM PENALISES
-GROUP BY PENALISES.idCompet
-ORDER BY PENALISES.idCompet;
 
 -- Trigger de vérification lors de l’insertion d’une nouvelle station. Ce trigger vérifiera qu’aucune
 -- donnée n’est NULL et que l’altitude est bien une valeur positive.
