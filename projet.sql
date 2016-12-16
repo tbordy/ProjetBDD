@@ -120,7 +120,7 @@ $$
         return resultat;
     END;
 $$
-language 'plpgsql';
+LANGUAGE 'plpgsql';
 
 --  Fonction qui formalise (1ère lettre majuscule le reste en minuscule) un nom passé en paramètre. Ex : DUPONT -> Dupont
 CREATE OR REPLACE FUNCTION formaliseNom (nom VARCHAR) RETURNS VARCHAR AS
@@ -131,7 +131,7 @@ $$
       	return nomFini;
  	END;
 $$
-language 'plpgsql';
+LANGUAGE 'plpgsql';
 
 --  Fonction qui formalise le nom de tous les skieurs. Cette fonction retournera le nombre de lignes traitées
 CREATE OR REPLACE FUNCTION formaliseSkieur () RETURNS VARCHAR AS
@@ -150,7 +150,7 @@ $$
         return ('Le nombre de ligne est de : '||i);
     END;
 $$
-language 'plpgsql';
+LANGUAGE 'plpgsql';
 
 -- Fonction qui déclasse les skieurs présents dans la table PENALISÉS
 CREATE OR REPLACE FUNCTION declasseSkieurPenalises () RETURNS setof record AS
@@ -161,15 +161,30 @@ $$
 
     END;
 $$
-language 'plpgsql';
+LANGUAGE 'plpgsql';
 
+CREATE OR REPLACE FUNCTION idCompetPenalise () RETURNS setof record AS
+$$ 
+DECLARE
+	curseur CURSOR FOR 
+		SELECT PENALISES.idCompet
+		FROM PENALISES
+		GROUP BY PENALISES.idCompet
+		ORDER BY PENALISES.idCompet;
+BEGIN 
+	FOR curseurRecord in curseur LOOP
+		return next curseurRecord.idCompet;
+	END LOOP;
+END; 
+$$ 
+LANGUAGE 'plpgsql';
 
 --UPDATE CLASSEMENT set CLASSEMENT.classement = z + 1
 --WHERE CLASSEMENT.noSkieur = y
 --AND CLASSEMENT.idCompet = x;
 
 -- z = 
-SELECT COUNT(CLASSEMENT.noSkieur)
+SELECT COUNT(CLASSEMENT.noSkieur) AS nbDeParticipant
 FROM CLASSEMENT
 WHERE CLASSEMENT.idCompet = 1;
 
