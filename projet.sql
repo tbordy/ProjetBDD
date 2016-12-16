@@ -195,3 +195,27 @@ SELECT PENALISES.idCompet
 FROM PENALISES
 GROUP BY PENALISES.idCompet
 ORDER BY PENALISES.idCompet;
+
+-- Trigger de vérification lors de l’insertion d’une nouvelle station. Ce trigger vérifiera qu’aucune
+-- donnée n’est NULL et que l’altitude est bien une valeur positive.
+
+CREATE OR REPLACE FUNCTION Station_stamp() RETURNS TRIGGER AS $station_stamp$
+BEGIN
+   -- Verifie que nomstation et pays sont donnés
+        IF NEW.nomStation IS NULL THEN
+            RAISE EXCEPTION 'nomStation ne peut pas être NULL';
+        END IF;
+        IF NEW.pays IS NULL THEN
+            RAISE EXCEPTION 'pays ne peut pas être NULL ';
+        END IF;
+
+        IF NEW.altitude < 0 THEN
+            RAISE EXCEPTION '% ne peut pas avoir une altitude negative', NEW.nomStation;
+        END IF;
+    RETURN NEW; -- le résultat est ignoré car il s'agit d'un trigger AFTER
+END;
+$station_stamp$ LANGUAGE plpgsql;
+
+CREATE TRIGGER station_stamp
+    BEFORE INSERT ON STATION
+    FOR EACH ROW EXECUTE PROCEDURE Station_stamp();
