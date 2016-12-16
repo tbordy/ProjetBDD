@@ -117,7 +117,7 @@ $$
         SELECT INTO  resultat AVG(STATION.altitude) AS altitudeMoyenne
         FROM STATION;
 
-        return resultat;
+        RETURN resultat;
     END;
 $$
 LANGUAGE 'plpgsql';
@@ -128,7 +128,7 @@ $$
 	DECLARE
       	nomFini VARCHAR := INITCAP(nom);
   	BEGIN
-      	return nomFini;
+      	RETURN nomFini;
  	END;
 $$
 LANGUAGE 'plpgsql';
@@ -147,7 +147,7 @@ $$
         	i:=i+1;
      	END LOOP;
         
-        return ('Le nombre de ligne est de : '||i);
+        RETURN ('Le nombre de ligne est de : '||i);
     END;
 $$
 LANGUAGE 'plpgsql';
@@ -161,22 +161,6 @@ $$
 
     END;
 $$
-LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION idCompetPenalise () RETURNS setof record AS
-$$ 
-DECLARE
-	curseur CURSOR FOR 
-		SELECT PENALISES.idCompet
-		FROM PENALISES
-		GROUP BY PENALISES.idCompet
-		ORDER BY PENALISES.idCompet;
-BEGIN 
-	FOR curseurRecord in curseur LOOP
-		return next curseurRecord.idCompet;
-	END LOOP;
-END; 
-$$ 
 LANGUAGE 'plpgsql';
 
 --UPDATE CLASSEMENT set CLASSEMENT.classement = z + 1
