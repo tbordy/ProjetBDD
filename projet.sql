@@ -139,10 +139,11 @@ $$
   	DECLARE
      	i int :=0;
       	curs CURSOR FOR 
-          	SELECT SKIEUR.nomSkieur as nomSkieur
+          	SELECT nomSkieur
          	FROM SKIEUR;
 	BEGIN
      	FOR resultat in curs LOOP
+     		raise notice ' UPDATE SKIEUR SET nomSkieur = %;', formaliseNom(resultat.nomSkieur);
         	UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
         	i:=i+1;
      	END LOOP;
@@ -159,16 +160,16 @@ DECLARE
 	x INTEGER := 0;
 	y INTEGER := 0;
 	curseur1 CURSOR FOR 
-		SELECT PENALISES.idCompet
+		SELECT idCompet
 		FROM PENALISES
-		GROUP BY PENALISES.idCompet
-		ORDER BY PENALISES.idCompet;
+		GROUP BY idCompet
+		ORDER BY idCompet;
 
 BEGIN 
 	FOR curseurRecord in curseur1 LOOP
 		x := curseurRecord.idCompet;
 		y := idCompetPenalise(x);
-		SELECT updateClassementAvecSkieurPenalises(x, y);
+		PERFORM updateClassementAvecSkieurPenalises(x, y);
 	END LOOP;
 END; 
 $$
@@ -179,9 +180,9 @@ CREATE OR REPLACE FUNCTION idCompetPenalise (id int) RETURNS int AS
 $$
 DECLARE
 	curseur2 CURSOR FOR 
-		SELECT COUNT(CLASSEMENT.noSkieur) AS nbDeParticipant
+		SELECT COUNT(noSkieur) AS nbDeParticipant
 		FROM CLASSEMENT
-		WHERE CLASSEMENT.idCompet = id;
+		WHERE idCompet = id;
 BEGIN
 	FOR curseurRecord in curseur2 LOOP
 		RETURN curseurRecord.nbDeParticipant;
@@ -195,17 +196,20 @@ $$
 DECLARE
 	z INTEGER := 0;
 	curseur3 CURSOR FOR 
-		SELECT PENALISES.noSkieur
+		SELECT noSkieur
 		FROM PENALISES 
-		WHERE PENALISES.idCompet = x;
+		WHERE idCompet = x;
 
 BEGIN 
 	FOR curseurRecord in curseur3 LOOP
 		z := curseurRecord.noSkieur;
+		raise notice ' UPDATE CLASSEMENT set classement = (% + 1)
+		WHERE noSkieur = %
+		AND idCompet = %;', y, z, x;
 
-		UPDATE CLASSEMENT set CLASSEMENT.classement = (y + 1)
-		WHERE CLASSEMENT.noSkieur = z
-		AND CLASSEMENT.idCompet = x;
+		UPDATE CLASSEMENT set classement = (y + 1)
+		WHERE noSkieur = z
+		AND idCompet = x;
 	END LOOP;
 END; 
 $$
@@ -235,5 +239,3 @@ $station_stamp$ LANGUAGE plpgsql;
 CREATE TRIGGER station_stamp
     BEFORE INSERT ON STATION
     FOR EACH ROW EXECUTE PROCEDURE Station_stamp();
-
-select * from classement;
