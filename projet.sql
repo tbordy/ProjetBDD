@@ -153,33 +153,58 @@ $$
 LANGUAGE 'plpgsql';
 
 -- Fonction qui déclasse les skieurs présents dans la table PENALISÉS
-CREATE OR REPLACE FUNCTION declasseSkieurPenalises () RETURNS setof record AS
+CREATE OR REPLACE FUNCTION declasseSkieurPenalises () RETURNS void AS
 $$
 DECLARE
 	x INTEGER := 0;
-	y INTEGER [];
-	z INTEGER := 0;
-	curseur CURSOR FOR 
+	y INTEGER := 0;
+	curseur1 CURSOR FOR 
 		SELECT PENALISES.idCompet
-			FROM PENALISES
-			GROUP BY PENALISES.idCompet
-			ORDER BY PENALISES.idCompet;
+		FROM PENALISES
+		GROUP BY PENALISES.idCompet
+		ORDER BY PENALISES.idCompet;
 
 BEGIN 
-	FOR curseurRecord in curseur LOOP
+	FOR curseurRecord in curseur1 LOOP
 		x := curseurRecord.idCompet;
-		y := -- erreur car y vaut plusieur valeur
+		y := idCompetPenalise(x);
+		SELECT updateClassementAvecSkieurPenalises(x, y);
+	END LOOP;
+END; 
+$$
+LANGUAGE 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION idCompetPenalise (id int) RETURNS int AS
+$$
+DECLARE
+	curseur2 CURSOR FOR 
+		SELECT COUNT(CLASSEMENT.noSkieur) AS nbDeParticipant
+		FROM CLASSEMENT
+		WHERE CLASSEMENT.idCompet = id;
+BEGIN
+	FOR curseurRecord in curseur2 LOOP
+		RETURN curseurRecord.nbDeParticipant;
+	END LOOP;
+END; 
+$$
+LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION updateClassementAvecSkieurPenalises (x int, y int) RETURNS void AS
+$$
+DECLARE
+	z INTEGER := 0;
+	curseur3 CURSOR FOR 
 		SELECT PENALISES.noSkieur
 		FROM PENALISES 
 		WHERE PENALISES.idCompet = x;
 
-		z :=
-		SELECT COUNT(CLASSEMENT.noSkieur) AS nbDeParticipant
-		FROM CLASSEMENT
-		WHERE CLASSEMENT.idCompet = x;
+BEGIN 
+	FOR curseurRecord in curseur3 LOOP
+		z := curseurRecord.noSkieur;
 
-		UPDATE CLASSEMENT set CLASSEMENT.classement = z + 1
-		WHERE CLASSEMENT.noSkieur = y
+		UPDATE CLASSEMENT set CLASSEMENT.classement = (y + 1)
+		WHERE CLASSEMENT.noSkieur = z
 		AND CLASSEMENT.idCompet = x;
 	END LOOP;
 END; 
@@ -189,19 +214,20 @@ LANGUAGE 'plpgsql';
 -- Trigger de vérification lors de l’insertion d’une nouvelle station. Ce trigger vérifiera qu’aucune
 -- donnée n’est NULL et que l’altitude est bien une valeur positive.
 
-CREATE OR REPLACE FUNCTION Station_stamp() RETURNS TRIGGER AS $station_stamp$
+CREATE OR REPLACE FUNCTION Station_stamp() RETURNS TRIGGER AS 
+$station_stamp$
 BEGIN
-   -- Verifie que nomstation et pays sont donnés
-        IF NEW.nomStation IS NULL THEN
-            RAISE EXCEPTION 'nomStation ne peut pas être NULL';
-        END IF;
-        IF NEW.pays IS NULL THEN
-            RAISE EXCEPTION 'pays ne peut pas être NULL ';
-        END IF;
+  	-- Verifie que nomstation et pays sont donnés
+    IF NEW.nomStation IS NULL THEN
+        RAISE EXCEPTION 'nomStation ne peut pas être NULL';
+    END IF;
+    IF NEW.pays IS NULL THEN
+        RAISE EXCEPTION 'pays ne peut pas être NULL ';
+    END IF;
 
-        IF NEW.altitude < 0 THEN
-            RAISE EXCEPTION '% ne peut pas avoir une altitude negative', NEW.nomStation;
-        END IF;
+    IF NEW.altitude < 0 THEN
+        RAISE EXCEPTION '% ne peut pas avoir une altitude negative', NEW.nomStation;
+    END IF;
     RETURN NEW; -- le résultat est ignoré car il s'agit d'un trigger AFTER
 END;
 $station_stamp$ LANGUAGE plpgsql;
@@ -209,3 +235,5 @@ $station_stamp$ LANGUAGE plpgsql;
 CREATE TRIGGER station_stamp
     BEFORE INSERT ON STATION
     FOR EACH ROW EXECUTE PROCEDURE Station_stamp();
+
+select * from classement;
