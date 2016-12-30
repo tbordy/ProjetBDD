@@ -68,10 +68,10 @@ CREATE TABLE PENALISES (
 
 
 
-insert into STATION values(default, 'Tignes', 2000, 'France');
-insert into STATION values(default, 'Les Ménuires', 1800, 'France');
-insert into STATION values(default, 'Les Arcs', 2000, 'France');
-insert into STATION values(default, 'La Plagne', 2000, 'France');
+insert into STATION values(default, 'Tignes', null, 'France');
+insert into STATION values(default, 'Les Ménuires', null, 'France');
+insert into STATION values(default, 'Les Arcs', null, 'France');
+insert into STATION values(default, 'La Plagne', null, 'France');
 
 insert into SPECIALITE values(default,'slalom');
 insert into SPECIALITE values(default,'descente');
@@ -117,7 +117,9 @@ $$
         SELECT INTO  resultat AVG(STATION.altitude) AS altitudeMoyenne
         FROM STATION;
 
-        RETURN resultat;
+        RETURN resultat;   
+    EXCEPTION
+    	WHEN NO_DATA_FOUND THEN NULL;
     END;
 $$
 LANGUAGE 'plpgsql';
@@ -129,6 +131,8 @@ $$
       	nomFini VARCHAR := INITCAP(nom);
   	BEGIN
       	RETURN nomFini;
+    EXCEPTION
+    	WHEN NO_DATA_FOUND THEN NULL;
  	END;
 $$
 LANGUAGE 'plpgsql';
@@ -143,7 +147,7 @@ $$
          	FROM SKIEUR;
 	BEGIN
      	FOR resultat in curs LOOP
-     		raise notice ' UPDATE SKIEUR SET nomSkieur = %;', formaliseNom(resultat.nomSkieur);
+     		RAISE NOTICD ' UPDATE SKIEUR SET nomSkieur = %;', formaliseNom(resultat.nomSkieur);
         	UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
         	i:=i+1;
      	END LOOP;
@@ -203,7 +207,7 @@ DECLARE
 BEGIN 
 	FOR curseurRecord in curseur3 LOOP
 		z := curseurRecord.noSkieur;
-		raise notice ' UPDATE CLASSEMENT set classement = (% + 1)
+		RAISE NOTICE ' UPDATE CLASSEMENT set classement = (% + 1)
 		WHERE noSkieur = %
 		AND idCompet = %;', y, z, x;
 
