@@ -65,7 +65,13 @@ CREATE TABLE PENALISES (
   	CONSTRAINT fkPenalisesCompetition FOREIGN KEY (idCompet) REFERENCES COMPETITION(idCompet)
 );
 
-
+CREATE TABLE ANCIENNOM (
+  noSkieur INT,
+  ancienNom VARCHAR(20),
+  dateChangement timestamp,
+  CONSTRAINT pkAncienNom PRIMARY KEY (noSkieur),
+  CONSTRAINT fkAncienNomSkieur FOREIGN KEY (noSkieur) REFERENCES SKIEUR(noSkieur)
+);
 
 
 insert into STATION values(default, 'Tignes', null, 'France');
@@ -243,3 +249,18 @@ $station_stamp$ LANGUAGE plpgsql;
 CREATE TRIGGER station_stamp
     BEFORE INSERT ON STATION
     FOR EACH ROW EXECUTE PROCEDURE Station_stamp();
+    
+-- Trigger qui sauvegarde les changements de noms des skieurs (suite à un mariage par exemple).
+CREATE OR REPLACE FUNCTION audit_Skieur() RETURNS TRIGGER AS $skieur_audit$
+BEGIN
+    IF (TG_OP = 'UPDATE') THEN
+        INSERT INTO ANCIENNOM SELECT OLD.noSkieur, OLD.nomSkieur,now();
+        RETURN OLD;
+    END IF;
+    RETURN NULL; -- le résultat est ignoré car il s'agit d'un trigger AFTER
+END;
+$skieur_audit$ language plpgsql;
+        
+CREATE TRIGGER skieur_audit
+    AFTER UPDATE ON skieur
+    FOR EACH ROW EXECUTE PROCEDURE audit_skieur();
