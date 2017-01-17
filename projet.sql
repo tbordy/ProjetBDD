@@ -153,7 +153,7 @@ $$
          	FROM SKIEUR;
 	BEGIN
      	FOR resultat in curs LOOP
-        	UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
+        	UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur)) WHERE nomSkieur = resultat.nomSkieur;
         	i:=i+1;
      	END LOOP;
         
