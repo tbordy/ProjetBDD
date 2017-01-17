@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS ANCIENNOM;
 DROP TABLE IF EXISTS PENALISES;
 DROP TABLE IF EXISTS COMPORTE;
 DROP TABLE IF EXISTS CLASSEMENT;
@@ -69,15 +70,14 @@ CREATE TABLE ANCIENNOM (
   noSkieur INT,
   ancienNom VARCHAR(20),
   dateChangement timestamp,
-  CONSTRAINT pkAncienNom PRIMARY KEY (noSkieur),
   CONSTRAINT fkAncienNomSkieur FOREIGN KEY (noSkieur) REFERENCES SKIEUR(noSkieur)
 );
 
 
-insert into STATION values(default, 'Tignes', null, 'France');
-insert into STATION values(default, 'Les Ménuires', null, 'France');
-insert into STATION values(default, 'Les Arcs', null, 'France');
-insert into STATION values(default, 'La Plagne', null, 'France');
+insert into STATION values(default, 'Tignes', 1800, 'France');
+insert into STATION values(default, 'Les Ménuires', 2600, 'France');
+insert into STATION values(default, 'Les Arcs', 3000, 'France');
+insert into STATION values(default, 'La Plagne', 5000, 'France');
 
 insert into SPECIALITE values(default,'slalom');
 insert into SPECIALITE values(default,'descente');
@@ -153,7 +153,6 @@ $$
          	FROM SKIEUR;
 	BEGIN
      	FOR resultat in curs LOOP
-     		RAISE NOTICD ' UPDATE SKIEUR SET nomSkieur = %;', formaliseNom(resultat.nomSkieur);
         	UPDATE SKIEUR SET nomSkieur = (formaliseNom(resultat.nomSkieur));
         	i:=i+1;
      	END LOOP;
@@ -263,4 +262,4 @@ $skieur_audit$ language plpgsql;
         
 CREATE TRIGGER skieur_audit
     AFTER UPDATE ON skieur
-    FOR EACH ROW EXECUTE PROCEDURE audit_skieur();
+    FOR EACH ROW EXECUTE PROCEDURE audit_Skieur();
